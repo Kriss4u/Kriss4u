@@ -1,0 +1,122 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+public class SwipeSingle : MonoBehaviour
+{
+    public GameObject knife;
+    private Rigidbody2D rb;
+    private BoxCollider2D knifeCollider;
+    public Animator anim;
+    private Vector2 startTouchPosition, endTouchPosition;
+    public float startForce = 35f;
+    public GameObject spawnerknife;
+
+    public GameObject explosion;
+
+
+
+    private float speed = 10000.0f;
+    private Transform transformObject;
+    private Vector2 currentDirection = new Vector3(0.0f, 1.0f, 0.0f);
+
+
+    private Vector3 knifePos = new Vector3(0.0f, -3.5f, 0.0f);//y position could be -3.5  or -5
+    private Vector3 knifePos2 = new Vector3(0.0f, -2f, 0.0f); 
+
+
+    void Start()
+    {
+        anim = GetComponent<Animator>();
+        rb = GetComponent<Rigidbody2D>();
+        knifeCollider = GetComponent<BoxCollider2D>();
+        anim.gameObject.GetComponent<Animator>().enabled = true;
+        transformObject = knife.transform;
+    }
+
+
+
+    private void Update()
+    {
+        /*if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Began)
+            startTouchPosition = Input.GetTouch(0).position;
+
+        if (Input.touchCount > 0 && Input.GetTouch(0).phase == TouchPhase.Ended)
+        {
+            endTouchPosition = Input.GetTouch(0).position;
+            if ((endTouchPosition.y < startTouchPosition.y) && transform.position.y > -2.0f)
+                anim.gameObject.GetComponent<Animator>().enabled = false;
+            Rotation();
+            if ((endTouchPosition.y > startTouchPosition.y) && transform.position.y < 2.0f)
+                rb.AddForce(transform.up * startForce, ForceMode2D.Impulse);
+        }*/
+        if (knife.transform.position.y < knifePos2.y)
+        {
+            if (Input.touchCount == 1)
+            {
+                // GET TOUCH 0
+                Touch touch0 = Input.GetTouch(0);
+
+                // APPLY ROTATION
+                if (touch0.phase == TouchPhase.Moved)
+                {
+                    anim.gameObject.GetComponent<Animator>().enabled = false;
+                    knife.transform.position = knifePos;
+                    if (knife.transform.position == knifePos)
+                    {
+                        Rotation();
+                    }
+                    else
+                    {
+
+                    }
+                }
+                else if (touch0.phase == TouchPhase.Ended)
+                { 
+                    rb.AddForce(transform.up * startForce, ForceMode2D.Impulse);
+                }
+
+            }
+        }
+    }
+
+    public void Rotation()
+    {
+        Vector2 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+        Vector2 objectPos = transformObject.position;
+        Vector2 direction = mousePos - objectPos;
+        direction.Normalize();
+        currentDirection = Vector2.Lerp(currentDirection, direction, Time.deltaTime * speed);
+        transformObject.up = currentDirection;
+    }
+
+
+    public void SpawnNewKnife()
+    {
+        anim.gameObject.GetComponent<Animator>().enabled = true;
+        GameObject newKnife = Instantiate(knife);
+        newKnife.transform.position = spawnerknife.transform.position;
+        newKnife.SetActive(true);
+    }
+
+
+    private void OnTriggerEnter2D(Collider2D collision)
+    {
+        if (collision.gameObject.tag == "wall")
+        {
+            SpawnNewKnife();
+            Destroy(knife);
+        }
+        else if (collision.gameObject.tag == "knife")
+        {
+            SpawnNewKnife();
+            Destroy(knife);
+        }
+        else if (collision.gameObject.tag == "barrelfalse")
+        {
+            Instantiate(explosion, transform.position, Quaternion.identity);
+            SpawnNewKnife();
+            Destroy(knife);
+        }
+    }
+}
